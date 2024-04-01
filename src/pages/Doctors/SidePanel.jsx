@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 
+import React from "react";
 import convertTime from "../../utils/convertTime";
- import { BASE_URL, token } from "./../../config";
+import { BASE_URL, token } from "../../config";
 
 const SidePanel = ({ ticketPrice, timeSlots, doctorId }) => {
   const bookingHandler = async () => {
@@ -12,23 +13,29 @@ const SidePanel = ({ ticketPrice, timeSlots, doctorId }) => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json" // Added Content-Type header
           },
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`Failed to create checkout session: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
-      if (data.session.url) {
+      if (data.session && data.session.url) {
         window.location.href = data.session.url;
+      } else {
+        throw new Error("Checkout session URL not found in response");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Booking error:", error);
     }
-    
   };
 
   return (
-    <div className=" shadow-panelShadow p-3 lg:p-5 rounded-md">
+    <div className="shadow-panelShadow p-3 lg:p-5 rounded-md">
       <div className="flex items-center justify-between">
         <p className="text__para mt-0 font-semibold">Ticket Price</p>
         <span className="text-[16px] leading-7 lg:text-[22px] lg:leading-8 text-headingColor font-bold">
